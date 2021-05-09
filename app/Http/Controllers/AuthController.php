@@ -61,7 +61,8 @@ class AuthController extends BaseController
         ]);
 
         // Find the user by email
-        $user = User::where('email', $this->request->input('email'))->first();
+        $userEloquent = User::where('email', $this->request->input('email'));
+        $user = $userEloquent->first();
 
         if (!$user) {
             // You wil probably have some sort of helpers or whatever
@@ -75,8 +76,10 @@ class AuthController extends BaseController
 
         // Verify the password and generate the token
         if (Hash::check($this->request->input('password'), $user->password)) {
+            $apikey = $this->jwt($user);
+            $userEloquent->update(['api_token' => "$apikey"]);
             return response()->json([
-                'token' => $this->jwt($user)
+                'token' => $apikey
             ], 200);
         }
 
