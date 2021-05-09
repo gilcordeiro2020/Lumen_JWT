@@ -2,13 +2,16 @@
 namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
-use App\User;
+use App\Models\User;
+
 class UserController extends Controller
 {
   public function __construct()
    {
-     //  $this->middleware('auth:api');
+      // $this->middleware('auth:api');
+      $this->middleware('auth', ['only' => 'current']);
    }
    /**
     * Display a listing of the resource.
@@ -21,14 +24,21 @@ class UserController extends Controller
        'email' => 'required',
        'password' => 'required'
         ]);
-      $user = User::where('email', $request->input('email'))->first();
+      $userEloquent = User::where('email', $request->input('email'));
+      $user = $userEloquent->first();
      if(Hash::check($request->input('password'), $user->password)){
-          $apikey = base64_encode(str_random(40));
-          Users::where('email', $request->input('email'))->update(['api_key' => "$apikey"]);;
-          return response()->json(['status' => 'success','api_key' => $apikey]);
+          $apikey = base64_encode(sha1(time()));
+          $userEloquent->update(['api_token' => "$apikey"]);
+          // return response()->json(['status' => 'success','api_token' => $apikey,'name'=>$user->name,'email'=>$user->email]);
+          return response()->json(['status' => 'success','api_token' => $apikey]);
       }else{
           return response()->json(['status' => 'fail'],401);
       }
+   }
+
+   public function current(Request $request) {
+      $user = Auth::user();
+      return response()->json(['status' => 'success','name' => $user->name,'email' => $user->email]);
    }
 }    
 ?>
