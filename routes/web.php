@@ -19,3 +19,6 @@ $router->get('/', function () use ($router) {
 
 $router->post('/users/signin', 'UserController@authenticate');
 $router->get('/users/current', ['middleware' => 'auth', 'uses' => 'UserController@current']);
+
+$router->post('/users/jwt/authenticate', 'AuthController@authenticate');
+// $router->get('/users/current', ['middleware' => 'auth', 'uses' => 'UserController@current']);
